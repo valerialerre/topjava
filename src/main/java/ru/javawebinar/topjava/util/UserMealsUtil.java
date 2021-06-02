@@ -29,26 +29,34 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        List<UserMealWithExcess> listMealPeriodWithExcess = new ArrayList<>();
         Map<LocalDate, Integer> mapDaySumCalories = new HashMap<>();
-
-
         for (UserMeal meal : meals) {
-            mapDaySumCalories.put(meal.getDateTime().toLocalDate(), mapDaySumCalories.getOrDefault(meal.getDateTime().toLocalDate(), 0) + meal.getCalories());
+            mapDaySumCalories.put(meal.getDateTime().toLocalDate(),
+                    mapDaySumCalories.getOrDefault(meal.getDateTime().toLocalDate(), 0) + meal.getCalories());
         }
 
+        List<UserMealWithExcess> listMealPeriodWithExcess = new ArrayList<>();
         for (UserMeal meal : meals) {
             if (TimeUtil.isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime)) {
                 listMealPeriodWithExcess.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), mapDaySumCalories.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
             }
         }
 
-
         return listMealPeriodWithExcess;
     }
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO Implement by streams
-        return null;
+        Map<LocalDate, Integer> mapDaySumCalories = new HashMap<>();
+        meals.forEach(meal -> mapDaySumCalories.put(meal.getDateTime().toLocalDate(),
+                mapDaySumCalories.getOrDefault(meal.getDateTime().toLocalDate(), 0) + meal.getCalories()));
+
+        List<UserMealWithExcess> listMealPeriodWithExcess = new ArrayList<>();
+        meals.forEach(meal -> {
+            if (TimeUtil.isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime))
+                listMealPeriodWithExcess.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(),
+                        mapDaySumCalories.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
+        });
+
+        return listMealPeriodWithExcess;
     }
 }
