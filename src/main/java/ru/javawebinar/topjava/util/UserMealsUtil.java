@@ -4,12 +4,11 @@ import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 import ru.javawebinar.topjava.util.TimeUtil;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -30,23 +29,20 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO return filtered list with excess. Implement by cycles
-        List<UserMeal> listMealPeriod = new ArrayList();
-        List<UserMealWithExcess> listMealPeriodWithExcess = new ArrayList();
-        int sumCaloriesPeriod = 0;
+        List<UserMealWithExcess> listMealPeriodWithExcess = new ArrayList<>();
+        Map<LocalDate, Integer> mapDaySumCalories = new HashMap<>();
 
-        for(UserMeal meal : meals) {
+
+        for (UserMeal meal : meals) {
+            mapDaySumCalories.put(meal.getDateTime().toLocalDate(), mapDaySumCalories.getOrDefault(meal.getDateTime().toLocalDate(), 0) + meal.getCalories());
+        }
+
+        for (UserMeal meal : meals) {
             if (TimeUtil.isBetweenHalfOpen(meal.getDateTime().toLocalTime(), startTime, endTime)) {
-                listMealPeriod.add(meal);
-                sumCaloriesPeriod = sumCaloriesPeriod + meal.getCalories();
+                listMealPeriodWithExcess.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), mapDaySumCalories.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
             }
         }
 
-        boolean hasCaloriesExcess = (sumCaloriesPeriod - caloriesPerDay) > 0;
-
-        for(UserMeal meal : listMealPeriod) {
-            listMealPeriodWithExcess.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), hasCaloriesExcess));
-        }
 
         return listMealPeriodWithExcess;
     }
